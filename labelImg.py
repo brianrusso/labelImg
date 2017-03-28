@@ -992,29 +992,36 @@ class MainWindow(QMainWindow, WindowMixin):
             self.saveFile()
 
     def openPrevImg(self, _value=False):
-        if not self.mayContinue():
-            return
+        #if not self.mayContinue():
+        #    return
+				if self.autoSaving and self.defaultSaveDir:
+					print "Saving on prev image"
+					self.saveFile()
 
-        if len(self.mImgList) <= 0:
-            return
+				if len(self.mImgList) <= 0:
+					return
 
-        if self.filePath is None:
-            return
+				if self.filePath is None:
+					return
 
-        currIndex = self.mImgList.index(self.filePath)
-        if currIndex - 1 >= 0:
-            filename = self.mImgList[currIndex - 1]
-            if filename:
-                self.loadFile(filename)
+				currIndex = self.mImgList.index(self.filePath)
+				if currIndex - 1 >= 0:
+					filename = self.mImgList[currIndex - 1]
+				if filename:
+					self.loadFile(filename)
+					self.loadLabelIfExists(filename)
 
     def openNextImg(self, _value=False):
         # Proceding next image without dialog if having any label
+        print self.autoSaving
+        print self.defaultSaveDir
+        print self.dirty
         if self.autoSaving is True and self.defaultSaveDir is not None:
             if self.dirty is True:
                 self.saveFile()
 
-        if not self.mayContinue():
-            return
+#        if not self.mayContinue():
+#            return
 
         if len(self.mImgList) <= 0:
             return
@@ -1026,9 +1033,15 @@ class MainWindow(QMainWindow, WindowMixin):
             currIndex = self.mImgList.index(self.filePath)
             if currIndex + 1 < len(self.mImgList):
                 filename = self.mImgList[currIndex + 1]
-
         if filename:
+            self.loadLabelIfExists(filename)
             self.loadFile(filename)
+
+    def loadLabelIfExists(self, imgFilename):
+        labelPath = self.getLabelFilename(imgFilename)
+        print labelPath
+        if os.path.isfile(labelPath):
+            self.loadPascalXMLByFilename(labelPath)
 
     def openFile(self, _value=False):
         if not self.mayContinue():
@@ -1042,14 +1055,20 @@ class MainWindow(QMainWindow, WindowMixin):
                 filename = filename[0]
             self.loadFile(filename)
 
+    def getLabelFilename(self, filePath):
+        labelName = os.path.splitext(filePath)[0] + LabelFile.suffix
+        savedPath = os.path.join(str(self.defaultSaveDir), labelName)
+        return savedPath 
+    
     def saveFile(self, _value=False):
         if self.defaultSaveDir is not None and len(str(self.defaultSaveDir)):
             # print('handle the image:' + self.filePath)
             imgFileName = os.path.basename(self.filePath)
-            savedFileName = os.path.splitext(
-                imgFileName)[0] + LabelFile.suffix
-            savedPath = os.path.join(
-                str(self.defaultSaveDir), savedFileName)
+            savedPath = self.getLabelFilename(imgFileName)
+            #savedFileName = os.path.splitext(
+            #    imgFileName)[0] + LabelFile.suffix
+            #savedPath = os.path.join(
+            #    str(self.defaultSaveDir), savedFileName)
             self._saveFile(savedPath)
         else:
             self._saveFile(self.filePath if self.labelFile
@@ -1182,7 +1201,7 @@ class Settings(object):
     """Convenience dict-like wrapper around QSettings."""
 
     def __init__(self, types=None):
-        self.data = QSettings()
+        self.data = QSettings("labelImg")
         self.types = defaultdict(lambda: QVariant, types if types else {})
 
     def __setitem__(self, key, value):
