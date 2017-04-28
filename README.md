@@ -16,9 +16,14 @@ Annotations are saved as XML files in PASCAL VOC format, the format used by [Ima
 
 ### Download prebuilt binaries
 
-* Windows &  Linux
- * [http://tzutalin.github.io/labelImg/](http://tzutalin.github.io/labelImg/)
-
+* Windows
+ * [Download LabelImg 1.2.2 for Windows](https://raw.githubusercontent.com/tzutalin/LabelImg/gh-pages/windows/windows_v1.2.2.zip)
+ * [Download LabelImg 1.2.1 for Windows](https://raw.githubusercontent.com/tzutalin/LabelImg/gh-pages/windows/windows_v1.2.1.zip)
+ * [Download LabelImg 1.2 for Windows](https://raw.githubusercontent.com/tzutalin/LabelImg/gh-pages/windows/windows_v1.2.zip)
+* Linux
+ * [Download LabelImg 1.2.2 for Linux](https://raw.githubusercontent.com/tzutalin/LabelImg/gh-pages/linux/linux_v1.2.2.zip)
+ * [Download LabelImg 1.2.1 for Linux](https://raw.githubusercontent.com/tzutalin/LabelImg/gh-pages/linux/linux_v1.2.1.zip)
+ * [Download LabelImg 1.2 for Linux](https://raw.githubusercontent.com/tzutalin/LabelImg/gh-pages/linux/linux_v1.2.zip)
 * OS X
  * Binaries for OS X are not yet available. Help would be appreciated. At present it must be [built from source](#os-x).
 
