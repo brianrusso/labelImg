@@ -2,6 +2,8 @@
 # -*- coding: utf8 -*-
 import _init_path
 import sys
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element, SubElement
 from lxml import etree
 import codecs
 
@@ -23,10 +25,9 @@ class PascalVocWriter:
         """
             Return a pretty-printed XML string for the Element.
         """
-        rough_string = etree.tostring(elem, encoding='UTF-8')
-        rough_string = str(rough_string, encoding="UTF-8")
-        root = etree.XML(rough_string)
-        return etree.tostring(root, encoding='UTF-8', pretty_print=True)
+        rough_string = ElementTree.tostring(elem, 'utf8')
+        root = etree.fromstring(rough_string)
+        return etree.tostring(root, pretty_print=True)
 
     def genXML(self):
         """
@@ -38,26 +39,26 @@ class PascalVocWriter:
                 self.imgSize is None:
             return None
 
-        top = etree.Element('annotation')
+        top = Element('annotation')
         top.set('verified', 'yes' if self.verified else 'no')
 
-        folder = etree.SubElement(top, 'folder')
+        folder = SubElement(top, 'folder')
         folder.text = self.foldername
 
-        filename = etree.SubElement(top, 'filename')
+        filename = SubElement(top, 'filename')
         filename.text = self.filename
 
-        localImgPath = etree.SubElement(top, 'path')
+        localImgPath = SubElement(top, 'path')
         localImgPath.text = self.localImgPath
 
-        source = etree.SubElement(top, 'source')
-        database = etree.SubElement(source, 'database')
+        source = SubElement(top, 'source')
+        database = SubElement(source, 'database')
         database.text = self.databaseSrc
 
-        size_part = etree.SubElement(top, 'size')
-        width = etree.SubElement(size_part, 'width')
-        height = etree.SubElement(size_part, 'height')
-        depth = etree.SubElement(size_part, 'depth')
+        size_part = SubElement(top, 'size')
+        width = SubElement(size_part, 'width')
+        height = SubElement(size_part, 'height')
+        depth = SubElement(size_part, 'depth')
         width.text = str(self.imgSize[1])
         height.text = str(self.imgSize[0])
         if len(self.imgSize) == 3:
@@ -65,7 +66,7 @@ class PascalVocWriter:
         else:
             depth.text = '1'
 
-        segmented = etree.SubElement(top, 'segmented')
+        segmented = SubElement(top, 'segmented')
         segmented.text = '0'
         return top
 
@@ -76,27 +77,27 @@ class PascalVocWriter:
 
     def appendObjects(self, top):
         for each_object in self.boxlist:
-            object_item = etree.SubElement(top, 'object')
-            name = etree.SubElement(object_item, 'name')
+            object_item = SubElement(top, 'object')
+            name = SubElement(object_item, 'name')
             try:
                 name.text = unicode(each_object['name'])
             except NameError:
                 # Py3: NameError: name 'unicode' is not defined
                 name.text = each_object['name']
-            pose = etree.SubElement(object_item, 'pose')
+            pose = SubElement(object_item, 'pose')
             pose.text = "Unspecified"
-            truncated = etree.SubElement(object_item, 'truncated')
+            truncated = SubElement(object_item, 'truncated')
             truncated.text = "0"
-            difficult = etree.SubElement(object_item, 'difficult')
+            difficult = SubElement(object_item, 'difficult')
             difficult.text = "0"
-            bndbox = etree.SubElement(object_item, 'bndbox')
-            xmin = etree.SubElement(bndbox, 'xmin')
+            bndbox = SubElement(object_item, 'bndbox')
+            xmin = SubElement(bndbox, 'xmin')
             xmin.text = str(each_object['xmin'])
-            ymin = etree.SubElement(bndbox, 'ymin')
+            ymin = SubElement(bndbox, 'ymin')
             ymin.text = str(each_object['ymin'])
-            xmax = etree.SubElement(bndbox, 'xmax')
+            xmax = SubElement(bndbox, 'xmax')
             xmax.text = str(each_object['xmax'])
-            ymax = etree.SubElement(bndbox, 'ymax')
+            ymax = SubElement(bndbox, 'ymax')
             ymax.text = str(each_object['ymax'])
 
     def save(self, targetFile=None):
@@ -137,14 +138,8 @@ class PascalVocReader:
 
     def parseXML(self):
         assert self.filepath.endswith('.xml'), "Unsupport file format"
-        content = None
-        with open(self.filepath, 'r') as xmlFile:
-            content = xmlFile.read()
-
-        if content is None:
-            return False
-
-        xmltree = etree.XML(content)
+        parser = etree.XMLParser(encoding='utf-8')
+        xmltree = ElementTree.parse(self.filepath, parser=parser).getroot()
         filename = xmltree.find('filename').text
         try:
             verified = xmltree.attrib['verified']
