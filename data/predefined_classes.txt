@@ -1,5 +1,9 @@
-dog
 person
-cat
-tv
-car
+aircraft
+helicopter
+vessel
+structure
+explosion
+vehicle
+antenna
+overlay

@@ -826,11 +826,11 @@ class MainWindow(QMainWindow, WindowMixin):
             self.toggleActions(True)
 
             # Label xml file and show bound box according to its filename
-            if self.usingPascalVocFormat is True and \
-                    self.defaultSaveDir is not None:
+            if self.usingPascalVocFormat:
                 basename = os.path.basename(
                     os.path.splitext(self.filePath)[0]) + XML_EXT
-                xmlPath = os.path.join(self.defaultSaveDir, basename)
+                xmlPath = self.getLabelFilename(self.filePath)
+                print("Loading label file from " + xmlPath )
                 self.loadPascalXMLByFilename(xmlPath)
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
@@ -994,7 +994,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def openPrevImg(self, _value=False):
         #if not self.mayContinue():
         #    return
-				if self.autoSaving and self.defaultSaveDir:
+				if self.autoSaving:
 					print "Saving on prev image"
 					self.saveFile()
 
@@ -1013,15 +1013,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def openNextImg(self, _value=False):
         # Proceding next image without dialog if having any label
-        print self.autoSaving
-        print self.defaultSaveDir
-        print self.dirty
-        if self.autoSaving is True and self.defaultSaveDir is not None:
-            if self.dirty is True:
-                self.saveFile()
-
-#        if not self.mayContinue():
-#            return
+        #print("Am autosaving " + self.autoSaving)
+        #print("Am dirty -" + self.dirty)
+        if self.autoSaving and self.dirty:
+            self.saveFile()
 
         if len(self.mImgList) <= 0:
             return
@@ -1039,7 +1034,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadLabelIfExists(self, imgFilename):
         labelPath = self.getLabelFilename(imgFilename)
-        print labelPath
+        print("Trying to load labels from " +labelPath)
         if os.path.isfile(labelPath):
             self.loadPascalXMLByFilename(labelPath)
 
@@ -1056,23 +1051,16 @@ class MainWindow(QMainWindow, WindowMixin):
             self.loadFile(filename)
 
     def getLabelFilename(self, filePath):
-        labelName = os.path.splitext(filePath)[0] + LabelFile.suffix
-        savedPath = os.path.join(str(self.defaultSaveDir), labelName)
-        return savedPath 
+        labelName = filePath[:-4] + ".xml"
+        print("Label filename {} -> {}".format(filePath, labelName))
+        #labelName = os.path.splitext(filePath)[0] + LabelFile.suffix
+        return labelName 
+
     
     def saveFile(self, _value=False):
-        if self.defaultSaveDir is not None and len(str(self.defaultSaveDir)):
-            # print('handle the image:' + self.filePath)
-            imgFileName = os.path.basename(self.filePath)
-            savedPath = self.getLabelFilename(imgFileName)
-            #savedFileName = os.path.splitext(
-            #    imgFileName)[0] + LabelFile.suffix
-            #savedPath = os.path.join(
-            #    str(self.defaultSaveDir), savedFileName)
-            self._saveFile(savedPath)
-        else:
-            self._saveFile(self.filePath if self.labelFile
-                           else self.saveFileDialog())
+        imgFileName = os.path.basename(self.filePath)
+        savedPath = self.getLabelFilename(self.filePath)
+        self._saveFile(savedPath)
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
